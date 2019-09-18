@@ -1,0 +1,7 @@
+# If you are here to restrict what interfaces should dhcpd listen on,
+# be aware that dhcpd listens *only* on interfaces for which it finds subnet
+
+DHCPDARGS=eth0
+# example:
+# $ cp /usr/lib/systemd/system/dhcpd.service /etc/systemd/system/
+# $ vi /etc/systemd/system/dhcpd.service
