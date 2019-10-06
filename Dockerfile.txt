@@ -1,0 +1,49 @@
+FROM centos:7
+
+MAINTAINER ishay@airspan.com
+
+# general:
+USER root
+COPY * /var/www/
+RUN chmod 777 /var/www/*
+RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+RUN yum update
+RUN yum install -y python36u python36u-libs python36u-devel python36u-pip
+RUN yum -y install net-tools
+WORKDIR /var/www/
+RUN ./gen_set.sh
+COPY dhcpd.conf /etc/dhcp/
+COPY dhcpd /etc/sysconfig/
+RUN touch /var/www/GenConfOpListStatus.db
+#RUN /usr/bin/systemctl disable firewalld
+#RUN /usr/bin/systemctl stop firewalld
+
+# For crontab:
+RUN yum -y install cronie
+COPY set_cron.sh .
+COPY cron-text .
+RUN ./set_cron.sh
+
+# For dhcpD:
+COPY dhcpd /etc/sysconfig/
+COPY dhcpd.conf /etc/dhcp/dhcpd.conf
+RUN yum -y install dhcp
+RUN chkconfig dhcpd on
+RUN chmod 777 -R /etc/dhcp/
+# RUN service dhcpd start
+#RUN /etc/init.d/dhcp start
+
+# For Apache:
+RUN yum -y install httpd
+#COPY httpd.conf /etc/httpd/conf/
+COPY ./httpd.conf /etc/httpd/conf/
+#COPY /var/www/httpd.conf /etc/httpd/conf/
+#RUN service httpd start
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# CMD sudo /etc/init.d/apache2 start
+EXPOSE 80
+
+
+#ENTRYPOINT ["/bin/bash", "/bootstrap.sh"]
+#ENV DIRPATH /path
+#WORKDIR $DIRPATH/$DIRNAME
